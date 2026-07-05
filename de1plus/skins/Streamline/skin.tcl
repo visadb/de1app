@@ -6,7 +6,7 @@ sdltk touchtranslate 0
 dui theme add streamline
 dui theme set streamline
 
-set ::streamline_longpress_threshold 1000
+set ::streamline_longpress_threshold 500
 
 if {$::android != 1} {
 	set ::settings(ghc_is_installed) 0
@@ -439,19 +439,30 @@ proc copy_streamline_settings_to_DYE {} {
 }
 
 
+proc round_to_three_digits {in} {
+	if {$in == ""} {
+		return ""
+	}
+	set x 0
+	catch {
+		set x [expr {round($in * 1000.0)/1000.0}]
+	}
+	return $x
+}
+
 proc streamline_adjust_grind { args } {
 
 	if {$args == "-"} {
-		set ::settings(grinder_setting) [round_to_one_digits [expr {$::settings(grinder_setting) - .1}]]
+		set ::settings(grinder_setting) [round_to_three_digits [expr {$::settings(grinder_setting) - .25}]]
 		flash_button "streamline_minus_grind_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
 	} elseif {$args == "+"} {
-		set ::settings(grinder_setting) [round_to_one_digits [expr {$::settings(grinder_setting) + .1}]]
+		set ::settings(grinder_setting) [round_to_three_digits [expr {$::settings(grinder_setting) + .25}]]
 		flash_button "streamline_plus_grind_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
 	} elseif {$args == "--"} {
-		set ::settings(grinder_setting) [round_to_one_digits [expr {$::settings(grinder_setting) - 1}]]
+		set ::settings(grinder_setting) [round_to_three_digits [expr {$::settings(grinder_setting) - .025}]]
 		flash_button "streamline_minus_grind_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
 	} elseif {$args == "++"} {
-		set ::settings(grinder_setting) [round_to_one_digits [expr {$::settings(grinder_setting) + 1}]]
+		set ::settings(grinder_setting) [round_to_three_digits [expr {$::settings(grinder_setting) + .025}]]
 		flash_button "streamline_plus_grind_btn" $::plus_minus_flash_on_color $::plus_minus_flash_off_color
 	}
 
@@ -857,7 +868,7 @@ set zoomed_btns ""
 lappend zoomed_btns \
 	[list -text [translate "Grind"] -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-Bold18"] \
-	[list -text {$::settings(grinder_setting)} -font "mono12" -foreground $::dataline_data_color   ] \
+	[list -text {[format "%.3f" $::settings(grinder_setting)]} -font "mono12" -foreground $::dataline_data_color   ] \
 	[list -text "    " -font "Inter-SemiBold18"] \
 	[list -text [translate "Dose"] -font "Inter-Bold18" -foreground $::dataline_label_color  ] \
 	[list -text " " -font "Inter-SemiBold18"] \
@@ -1811,7 +1822,7 @@ if {[ifexists ::settings(grinder_dose_weight)] == "" || [ifexists ::settings(gri
 }
 
 # labels
-add_de1_variable "off " 418 304 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -textvariable {[ifexists ::settings(grinder_setting)]}
+add_de1_variable "off " 418 304 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -textvariable {[format "%.3f" [ifexists ::settings(grinder_setting) 0]]}
 add_de1_variable "off " 418 418 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags dose_label_1st -textvariable {[return_weight_measurement $::settings(grinder_dose_weight) 2]}
 add_de1_variable "off" 418 512 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -tags weight_label_1st -textvariable {[return_weight_measurement [determine_final_weight] 2]}
 add_de1_variable "off" 418 558 -justify center -anchor "center" -text "" -font Inter-Regular12 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -textvariable {([dose_weight_ratio])}
@@ -1825,7 +1836,7 @@ add_de1_variable "off  water" 418 1417 -justify center -anchor "center" -text ""
 add_de1_variable "off  water" 418 1460 -justify center -anchor "center" -text "" -font Inter-Regular12 -fill $::plus_minus_value_text_color -width [rescale_x_skin 200] -textvariable {$::streamline_hotwater_label_2nd}
 
 #disabled labels
-add_de1_variable "espresso water flush hotwaterrinse steam" 418 304 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -textvariable {[ifexists ::settings(grinder_setting)]}
+add_de1_variable "espresso water flush hotwaterrinse steam" 418 304 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -textvariable {[format "%.3f" [ifexists ::settings(grinder_setting) 0]]}
 add_de1_variable "espresso water flush hotwaterrinse steam" 418 418 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -tags dose_label_1std -textvariable {[return_weight_measurement $::settings(grinder_dose_weight) 2]}
 add_de1_variable "espresso water flush hotwaterrinse steam" 418 512 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -tags weight_label_1std -textvariable {[return_weight_measurement [determine_final_weight] 2]}
 add_de1_variable "espresso water flush hotwaterrinse steam" 418 558 -justify center -anchor "center" -text "" -font Inter-Regular12 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -textvariable {([dose_weight_ratio])}
@@ -1838,7 +1849,7 @@ add_de1_variable "espresso water steam" 418 1215 -justify center -anchor "center
 add_de1_variable "espresso  flush hotwaterrinse steam" 418 1417 -justify center -anchor "center" -text "" -font Inter-Bold16 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -tags hotwater_label_1std -textvariable {$::streamline_hotwater_label_1st}
 add_de1_variable "espresso  flush hotwaterrinse steam" 418 1460 -justify center -anchor "center" -text "" -font Inter-Regular12 -fill $::plus_minus_value_text_color_disabled -width [rescale_x_skin 200] -textvariable {$::streamline_hotwater_label_2nd}
 
-add_de1_button "off " { ask_for_data_entry_number [translate "GRIND"] [ifexists ::settings(grinder_setting)] ::settings(grinder_setting) "" 0 0 1000 [list copy_streamline_settings_to_DYE {save_profile_and_update_de1 0} "streamline_blink_rounded_setting grind_setting_rectangle"]} 370 260 470 340  ""   
+add_de1_button "off " { ask_for_data_entry_number [translate "GRIND"] [ifexists ::settings(grinder_setting)] ::settings(grinder_setting) "" 0 0 1000 [list copy_streamline_settings_to_DYE {save_profile_and_update_de1 0} "streamline_blink_rounded_setting grind_setting_rectangle"] 3} 370 260 470 340  ""
 add_de1_button "off " { ask_for_data_entry_number [translate "DOSE"] [ifexists ::settings(grinder_dose_weight)] ::settings(grinder_dose_weight) [translate g] 0 0 30 [list copy_streamline_settings_to_DYE {save_profile_and_update_de1 0} "streamline_blink_rounded_setting dose_setting_rectangle dose_label_1st"]} 370 374 470 454  ""   
 add_de1_button "off " { ask_for_data_entry_number [translate "DRINK"] [ifexists ::settings(final_desired_shot_weight)] ::settings(final_desired_shot_weight) [translate g] 0 0 2000 [list copy_streamline_settings_to_DYE {streamline_set_drink_weight $::settings(final_desired_shot_weight)} refresh_favorite_dosebev_button_labels {save_profile_and_update_de1 0} "streamline_blink_rounded_setting weight_setting_rectangle weight_label_1st"]} 370 488 470 578  ""   
 
@@ -4306,7 +4317,7 @@ proc update_data_card { arrname settingsarr } {
 	}
 	
 	if {[ifexists profile_settings(grinder_setting)] != "" && [ifexists profile_settings(grinder_setting)] != "0"} {
-		lappend third_line_parts "[translate "Grind"] [round_one_digits_or_integer_if_needed $profile_settings(grinder_setting)]"
+		lappend third_line_parts "[translate "Grind"] [format "%.3f" $profile_settings(grinder_setting)]"
 	}
 
 	set ::streamline_current_history_third_line [join $third_line_parts "  |  "]
@@ -4812,8 +4823,7 @@ proc streamline_entry_page_button {btn} {
 
 	set parts [split $current {.}]
 	if {[llength $parts] > 1} {
-		if {[string length [lindex $parts 1]] > 1} {
-			# don't allow more than 1 decimal point of precision in data entry
+		if {[string length [lindex $parts 1]] > $::streamline_entry_decimal_places} {
 			return
 		}
 	}
@@ -4833,7 +4843,7 @@ proc streamline_entry_hint {} {
 }
 
 # callback_success callback_failure
-proc ask_for_data_entry_number {title current_value varname_to_store_in value_suffix {integer_only 0} {min {}} {max {}} {callbacks {}} } {
+proc ask_for_data_entry_number {title current_value varname_to_store_in value_suffix {integer_only 0} {min {}} {max {}} {callbacks {}} {decimal_places 1} } {
 
 	set ::streamline_data_entry_page_title $title
 	set ::streamline_data_entry_page_value $current_value
@@ -4846,6 +4856,7 @@ proc ask_for_data_entry_number {title current_value varname_to_store_in value_su
 	set ::streamline_entry_return_to_page [dui page current]
 	set ::streamline_entry_save_to_varname $varname_to_store_in
 	set ::streamline_entry_integer_only $integer_only
+	set ::streamline_entry_decimal_places $decimal_places
 
 	set ::streamline_entry_value_suffix $value_suffix
 
