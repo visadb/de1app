@@ -46,8 +46,13 @@ proc strip_crlf {in} {
 	return $out
 }
 
+set ::tankempty_snoozed_until 0
+
 proc page_change_due_to_de1_state_change {textstate} {
 	if {$textstate == "Idle"} {
+		if {$::de1(current_context) eq "tankempty"} {
+			set ::tankempty_snoozed_until [expr {[clock seconds] + 3600}]
+		}
 		page_display_change $::de1(current_context) "off"
 	} elseif {$textstate == "GoingToSleep"} {
 		page_display_change $::de1(current_context) "saver" 
@@ -61,7 +66,10 @@ proc page_change_due_to_de1_state_change {textstate} {
 	} elseif {$textstate == "HotWater"} {
 		page_display_change $::de1(current_context) "water" 
 	} elseif {$textstate == "Refill"} {
-		page_display_change $::de1(current_context) "tankempty" 
+		if {[clock seconds] < $::tankempty_snoozed_until} {
+			return
+		}
+		page_display_change $::de1(current_context) "tankempty"
 	} elseif {$textstate == "SteamRinse"} {
 		page_display_change $::de1(current_context) "steamrinse" 
 	} elseif {$textstate == "HotWaterRinse"} {
